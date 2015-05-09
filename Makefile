@@ -2,7 +2,7 @@ programmerDev=/dev/spidev0.0
 programmerType=linuxspi
 
 optimise=-ffunction-sections -fdata-sections -ffreestanding
-cflags=-g -DF_CPU=$(avrFreq) -mmcu=$(avrType) -Wall -Os -Wextra -std=gnu99 -I.
+cflags=-g -DF_CPU=$(avrFreq) -mmcu=$(avrType) -Wall -Os -Wextra -std=gnu99 -I src
 dudeflags=-p $(avrType) -c $(programmerType) -P $(programmerDev) -b 10000
 
 avrType=attiny85
@@ -23,18 +23,18 @@ else
 endif
 
 name=main
-srcs=main.c
+srcs=src/main.c
 objs=$(subst .c,.o,$(srcs))
 lsts=$(subst .c,.lst,$(srcs))
 
 # definitions that override defines in various libraries
-cflags+=-include tinytemplateconfig.h
+cflags+=-include src/tinytemplateconfig.h
 
 # protocol
-cflags+=-I protocol
+cflags+=-I vendor/protocol/src
 
 # vusb lib
-vusb=vusb/usbdrv
+vusb=vendor/vusb/usbdrv
 cflags+=-I $(vusb)
 srcs+= \
 	$(vusb)/usbdrv.c \
@@ -42,13 +42,13 @@ srcs+= \
 	$(vusb)/usbdrvasm.c
 
 # tiny-hw-spi lib
-ths=tiny-hw-spi
+ths=vendor/tiny-hw-spi
 cflags+=-I $(ths)
 srcs+= \
 	$(ths)/tiny_hw_spi.c
 
 # nrf-network
-nn=nrf-network
+nn=vendor/nrf-network
 cflags+= -I $(nn) -I $(nn)/tiny/tinytemplate/firmware/include
 srcs+= \
 	$(nn)/transmitter.c \
