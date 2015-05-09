@@ -59,11 +59,15 @@ USB_PUBLIC usbMsgLen_t usbFunctionSetup(uchar data[8]) {
   usbRequest_t *rq = (void *)data; // cast data to correct
 
   switch(rq->bRequest) { // custom command is in the bRequest field
-  case USB_NRF_STATUS: // query NRF status and send it to host
+  case REQUEST_BRIDGE_STATUS:
+    usbMsgPtr = replyBuf;
+    replyBuf[0] = 0xAB;
+    return 1;
+  case REQUEST_BRIDGE_NRF_STATUS: // query NRF status and send it to host
     usbMsgPtr = replyBuf;
     replyBuf[0] = tiny_spi_transfer(0xFF);
     return 1;
-  case USB_NRF_TRANSFER1:
+  case REQUEST_TRANSFER1:
     usbMsgPtr = replyBuf;
     int8_t reply_len = send_payload(rq->wValue.bytes, 1, rq->wValue.bytes + 1, 1, &replyBuf[1]);
     if (reply_len >= 0) {
@@ -74,15 +78,6 @@ USB_PUBLIC usbMsgLen_t usbFunctionSetup(uchar data[8]) {
       replyBuf[0] = -1;
       return 1;
     }
-    /*command = rq->wValue.bytes[0];
-    payload = rq->wValue.bytes[1];
-    return USB_NO_MSG;*/
-    /*usbMsgPtr = replyBuf;
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-      _delay_us(delay);
-    }
-    delay *= 2;
-    return 0;*/
   }
 
   return 0; // should not get here
